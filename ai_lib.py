@@ -4,6 +4,7 @@ from PIL import Image
 
 import vertexai
 from vertexai.language_models import TextGenerationModel
+from deepface import DeepFace
 
 
 def id_img_to_text(image):
@@ -65,5 +66,8 @@ def request_json_from_id_text(input_text):
 
     return response.text
 
-def photo_to_json():
-    return
+def compare_faces(face_1_path, face_2_path):
+    result = DeepFace.verify(img1_path=face_1_path, img2_path=face_2_path, detector_backend='mtcnn')
+    return result['verified']
+
+

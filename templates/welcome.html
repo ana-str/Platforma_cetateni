@@ -2,25 +2,56 @@
 <html>
 <head>
   <title>Welcome</title>
-  <link rel="stylesheet" type="text/css" href="{{url_for('static', filename = 'welcome.css')}}">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='welcome.css') }}">
+  <style>
+    /* Add styles for the centered label */
+    .label-text {
+      font-size: 28px;
+      text-align: center;
+      margin-top: 20px; /* Adjust the top margin as needed */
+    }
+
+    /* Center the dropped image */
+    .drop-zone {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 80vh; /* Set a height for the drop-zone */
+      border: 2px dashed #ccc;
+      margin-top: 20px;
+    }
+
+    /* Adjust styles for the dropped image */
+    #droppedImage {
+      max-width: 100%;
+      max-height: 300px;
+      display: none;
+    }
+  </style>
 </head>
 <body>
   <header class="header">
     <div class="logo">
-      <img src="static\user.png" alt="Logo" height="40px">
+      <img src="static/user.png" alt="Logo" height="40px">
     </div>
     <button class="button-77" onclick="logout()">Deconectează-te</button>
   </header>
 
-  <div class="main">
+<div class="main">
+    <div class="label-text">
+      <label for="fileInput">Etapa de verificare: Încărcați o fotografie cu dvs. pentru a confirma că sunteți titularul contului.</label>
+    </div>
+    <div class="drop-zone" id="dropZone" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
+      <img id="droppedImage" src="" alt="Dropped Image">
+    </div>
 
-  <div class="drop-zone" id="dropZone" ondrop="drop(event)" ondragover="allowDrop(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
-  </div>
+    <input type="file" id="fileInput" accept="image/*" onchange="handleFiles(event)" style="display: none;" />
+    <label for="fileInput" class="submit_button">Selectează o poză cu tine</label>
 
-  <input type="file" id="fileInput" accept="image/*" onchange="handleFiles(event)" />
-  <label for="fileInput" class="submit_button">Selectează un buletin</label>
-  <button class="submit_button">Scanează date</button>
-
+    <form id="imageForm" action="/validate_identity" method="post">
+      <input type="hidden" name="image_data" id="imageData" />
+      <button class="submit_button" onclick="submitForm(event)">Compară date</button>
+    </form>
   </div>
 
   <script>
@@ -63,16 +94,20 @@
         if (imageType.test(file.type)) {
           const reader = new FileReader();
           reader.onload = function(e) {
-            const img = new Image();
+            const img = document.getElementById('droppedImage');
             img.src = e.target.result;
-            document.getElementById('dropZone').innerHTML = '';
-            document.getElementById('dropZone').appendChild(img);
+            img.style.display = 'block';
+            document.getElementById('imageData').value = e.target.result;
           };
           reader.readAsDataURL(file);
         }
       }
     }
-  </script>
 
+    function submitForm(event) {
+      event.preventDefault();
+      document.getElementById('imageForm').submit();
+    }
+  </script>
 </body>
 </html>
