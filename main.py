@@ -12,7 +12,8 @@ from ai_lib import id_img_to_text, image_path_to_np_array, request_json_from_id_
 
 from openai import OpenAI
 
-from firestore_utils import get_object, save_image, save_base64_image
+from firestore_utils import get_object, save_image, save_base64_image, download_file_from_local_folder
+from prompts import prompt_buletin
 
 app = Flask(__name__)  # Initialze flask constructor
 
@@ -31,12 +32,14 @@ openai.api_key = "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"
 
 @app.route("/")
 def home_page():
+
     return render_template("home.html")
 
 
 # Login
 @app.route("/login", methods=["POST", "GET"])
 def login():
+    download_file_from_local_folder()
     if person['is_logged_in']:
         return render_template("download.html")
     return render_template("login.html")
@@ -104,10 +107,13 @@ client = OpenAI(
 
 
 def get_completion(prompt):
-    messages = [{"role": "user", "content": prompt}]
+    messages = [
+        {"role": "system", "content": prompt_buletin},
+        {"role": "user", "content": prompt}]
     response = client.chat.completions.create(
         messages=messages,
-        model="gpt-3.5-turbo",
+        model="gpt-3.5-turbo-16k",
+        temperature=0
     )
     # print(response, file=sys.stderr)
     return response.choices[0].message.content
