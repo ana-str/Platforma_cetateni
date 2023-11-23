@@ -1,17 +1,14 @@
 from __future__ import print_function
 
 import sys
-import base64
+
 import firebase_admin
-from PIL import Image
 from firebase_admin import credentials, firestore
 from flask import Flask, redirect, render_template, request, url_for
+from openai import OpenAI
 from transformers.models import openai
 
-from ai_lib import id_img_to_text, image_path_to_np_array, request_json_from_id_text, compare_faces
-
-from openai import OpenAI
-
+from ai_lib import compare_faces
 from firestore_utils import get_object, save_image, save_base64_image, download_file_from_local_folder
 from prompts import prompt_buletin
 
@@ -28,11 +25,9 @@ person = {"is_logged_in": False, "email": ""}
 openai.api_key = "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"
 
 
-
-
 @app.route("/")
 def home_page():
-
+    download_file_from_local_folder()
     return render_template("home.html")
 
 
@@ -82,7 +77,7 @@ def result():
 
                 return redirect(url_for('login'))  # log in failed
             else:
-                    # If there is any error, redirect back to login
+                # If there is any error, redirect back to login
 
                 return redirect(url_for('login'))
 
@@ -126,6 +121,7 @@ def get_bot_response():
     # return str(bot.get_response(userText))
     return response
 
+
 @app.route("/validate_identity", methods=["POST", "GET"])
 def validate_identity():
     if request.method == "POST":
@@ -134,9 +130,9 @@ def validate_identity():
 
             save_base64_image(image_data, file_name='static/input_face.jpg')
 
-
             if compare_faces("static/input_face.jpg", "static/face.jpg"):
-                #modificare
+                # modificare
+                download_file_from_local_folder()
                 return redirect(url_for('see_download_files'))
 
             else:
@@ -145,15 +141,18 @@ def validate_identity():
         except:
             return redirect(url_for('welcome'))
 
+
 @app.route("/see_download_files")
 def see_download_files():
     return render_template("download.html")
+
 
 # Route to trigger the redirect to the root URL
 @app.route('/redirect_to_root')
 def redirect_to_root():
     # Redirect to the root URL using url_for() and redirect()
     return redirect(url_for('home_page'))
+
 
 if __name__ == "__main__":
     app.secret_key = 'super secret key'
